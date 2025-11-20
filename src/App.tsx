@@ -4,7 +4,6 @@ import { QuizResponse, AnswerResponse } from './types/quiz';
 import { Confetti } from './components/Confetti';
 import { Timer } from './components/Timer';
 
-import { TargetIcon } from './components/icons/TargetIcon';
 import { DiceIcon } from './components/icons/DiceIcon';
 import { HomeIcon } from './components/icons/HomeIcon';
 import { RefreshIcon } from './components/icons/RefreshIcon';
@@ -320,8 +319,8 @@ function App() {
 
         <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full relative z-10">
           <div className="text-center mb-8">
-            <div className="w-24 h-24 bg-gradient-to-br from-lime-400 to-green-500 rounded-full mx-auto flex items-center justify-center mb-4 shadow-lg animate-bounce-subtle">
-              <TargetIcon className="w-14 h-14 text-white" />
+            <div className="w-32 h-32 mx-auto mb-4 animate-bounce-subtle">
+              <img src="/logo.png" alt="Quiz Game Logo" className="w-full h-full object-contain" />
             </div>
             <h1 className="text-5xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
               상식 퀴즈
