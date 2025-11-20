@@ -59,7 +59,6 @@ quiz-game-web/
 │   │   ├── Stats.tsx         # 통계 섹션
 │   │   ├── Features.tsx      # 기능 소개
 │   │   ├── QuizCategories.tsx # 퀴즈 카테고리
-│   │   ├── CTA.tsx           # Call to Action
 │   │   └── Footer.tsx        # 푸터
 │   ├── App.tsx               # 메인 앱 컴포넌트
 │   ├── main.tsx              # 진입점
@@ -91,10 +90,6 @@ quiz-game-web/
 - 호버 시 3D 효과
 - 각 카테고리별 커스텀 그라디언트
 
-### CTA
-- 이메일 구독 폼
-- 애니메이션 배경 패턴
-
 ## 🌐 배포
 
 이 프로젝트는 GitHub Pages에 자동으로 배포됩니다.
@@ -104,7 +99,7 @@ quiz-game-web/
    - Settings > Pages > Source: GitHub Actions 선택
 3. `main` 브랜치에 푸시하면 자동으로 배포됩니다
 
-배포 URL: `https://[username].github.io/quiz-game-web/`
+배포 URL: `https://junotech-labs.github.io/game-web/`
 
 ## 📝 라이선스
 
