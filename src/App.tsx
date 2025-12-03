@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { quizApi, QuizApiError } from './api/quizApi';
 import { QuizResponse, AnswerResponse } from './types/quiz';
 import { Confetti } from './components/Confetti';
@@ -27,11 +27,11 @@ function App() {
   // 게임 상태
   const [gameMode, setGameMode] = useState<GameMode>('menu');
   const [quizQueue, setQuizQueue] = useState<QuizResponse[]>([]);
-  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+  const currentQuizIndex = useRef(0);
   const [currentQuiz, setCurrentQuiz] = useState<QuizResponse | null>(null);
 
   const [answerResult, setAnswerResult] = useState<AnswerResponse | null>(null);
-  const [isAnswered, setIsAnswered] = useState(false);
+  const [userAnswer, setUserAnswer] = useState<number | null>(null);
 
   const [quizHistory, setQuizHistory] = useState<AnswerResponse[]>([]);
 
@@ -55,13 +55,13 @@ function App() {
       console.log(`[App] All ${QUIZ_COUNT} quizzes loaded:`, quizzes.map(q => q.id));
 
       setQuizQueue(quizzes);
-      setCurrentQuizIndex(0);
-      setCurrentQuiz(quizzes[0]);
+      currentQuizIndex.current = 0;
+      setCurrentQuiz(quizzes[currentQuizIndex.current]);
       setGameMode('playing');
-      setIsAnswered(false);
-
+      setUserAnswer(null);
       setAnswerResult(null);
       setTimerKey(prev => prev + 1);
+
     } catch (err) {
       console.error('[App] Start game error:', err);
       const errorMessage = err instanceof QuizApiError
@@ -75,69 +75,74 @@ function App() {
     }
   };
 
-  const handleAnswerClick = async (answerIndex: number) => {
-    // 중복 클릭 방지
-    if (isAnswered || loading || !currentQuiz) return;
+  const onAnswer = (answer: number) => {
+    if (userAnswer !== null) return;
+    setUserAnswer(answer);
+  };
 
-    setLoading(true);
+  // useEffect에서 사용자 응답 통합 처리
+  useEffect(() => {
+    let cancelled = false;
+  
+    const handleAnswerClick = async (user_answer: number) => {
+      // 중복 클릭 방지
+      if (loading || !currentQuiz || cancelled) return;
 
-    setIsAnswered(true); // 더블 클릭 방지를 위해 즉시 설정
-    setError(null);
+      setLoading(true);
+      setError(null);
 
-    try {
-      console.log('[App] Submitting answer:', { quiz_id: currentQuiz.id, user_answer: answerIndex });
-      const result = await quizApi.submitAnswer({
-        quiz_id: currentQuiz.id,
-        user_answer: answerIndex,
-      });
-      console.log('[App] Answer result:', result);
+      try {
+        console.log('[App] Submitting answer:', { quiz_id: currentQuiz.id, user_answer });
+        const result = await quizApi.submitAnswer({
+          quiz_id: currentQuiz.id,
+          user_answer,
+        });
+        console.log('[App] Answer result:', result);
 
-      setAnswerResult(result);
-      const newHistory = [...quizHistory, result];
-      setQuizHistory(newHistory);
+        setAnswerResult(result);
+        const newHistory = [...quizHistory, result];
+        setQuizHistory(newHistory);
+        setTimerKey(prev => prev + 1); // 타이머 리셋 타이밍 조정
 
-      if (result.is_correct) {
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), CONFETTI_DURATION);
+        if (result.is_correct) {
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), CONFETTI_DURATION);
 
-        // 지연 후 다음 문제로 자동 전환
-        // 모든 문제 완료시 자동 전환하지 않음 - 사용자가 버튼 클릭
-        if (newHistory.length < QUIZ_COUNT) {
-          const timer = setTimeout(() => {
-            handleNextQuestion();
-          }, CORRECT_ANSWER_DELAY);
-          setAutoTransitionTimer(timer);
+          // 지연 후 다음 문제로 자동 전환
+          // 모든 문제 완료시 자동 전환하지 않음 - 사용자가 버튼 클릭
+          if (newHistory.length < QUIZ_COUNT) {
+            const timer = setTimeout(() => {
+              handleNextQuestion();
+            }, CORRECT_ANSWER_DELAY);
+            setAutoTransitionTimer(timer);
+          }
+        } else {
+          // 오답의 경우 해설을 읽을 수 있도록 더 긴 지연 후 자동 전환
+          // 모든 문제 완료시 자동 전환하지 않음 - 사용자가 버튼 클릭
+          if (newHistory.length < QUIZ_COUNT) {
+            const timer = setTimeout(() => {
+              handleNextQuestion();
+            }, WRONG_ANSWER_DELAY);
+            setAutoTransitionTimer(timer);
+          }
         }
-      } else {
-        // 오답의 경우 해설을 읽을 수 있도록 더 긴 지연 후 자동 전환
-        // 모든 문제 완료시 자동 전환하지 않음 - 사용자가 버튼 클릭
-        if (newHistory.length < QUIZ_COUNT) {
-          const timer = setTimeout(() => {
-            handleNextQuestion();
-          }, WRONG_ANSWER_DELAY);
-          setAutoTransitionTimer(timer);
-        }
+      } catch (err) {
+        const errorMessage = err instanceof QuizApiError
+          ? err.message
+          : '답변 제출 실패';
+        setError(errorMessage);
+        // 오류 발생시 상태 리셋
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      const errorMessage = err instanceof QuizApiError
-        ? err.message
-        : '답변 제출 실패';
-      setError(errorMessage);
-      // 오류 발생시 상태 리셋
-      setIsAnswered(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    if (userAnswer === null) return;
+    handleAnswerClick(userAnswer);
 
-  const handleTimeout = async () => {
-    if (!isAnswered && currentQuiz) {
-      // 시간 초과시 자동으로 0번 답안 제출
-      // API에서 정답 여부를 판단함
-      console.log('[App] Timeout - auto-submitting answer 0');
-      await handleAnswerClick(0);
-    }
-  };
+    return () => {
+      cancelled = true;
+    };
+  }, [userAnswer]);
 
   const handleNextQuestion = () => {
     console.log('[App] Moving to next question...');
@@ -151,16 +156,15 @@ function App() {
     setError(null);
 
     // 부드러운 전환을 위해 현재 상태 먼저 초기화
-    setIsAnswered(false);
     setAnswerResult(null);
+    setUserAnswer(null); // 사용자 응답 초기화 이후 시간이 흐르도록 설정
 
     // 큐에서 다음 퀴즈 가져오기
-    const nextIndex = currentQuizIndex + 1;
+    const nextIndex = currentQuizIndex.current + 1;
     if (nextIndex < quizQueue.length) {
       console.log('[App] Loading quiz from queue:', quizQueue[nextIndex].id);
-      setCurrentQuizIndex(nextIndex);
+      currentQuizIndex.current = nextIndex;
       setCurrentQuiz(quizQueue[nextIndex]);
-      setTimerKey(prev => prev + 1);
     } else {
       console.error('[App] No more quizzes in queue!');
       setError('퀴즈를 불러올 수 없습니다.');
@@ -181,9 +185,8 @@ function App() {
     setGameMode('menu');
     setCurrentQuiz(null);
     setQuizQueue([]);
-    setCurrentQuizIndex(0);
+    currentQuizIndex.current = 0;
     setQuizHistory([]);
-    setIsAnswered(false);
     setAnswerResult(null);
     setError(null);
   };
@@ -518,8 +521,8 @@ function App() {
           <div className="mb-4">
             <Timer
               duration={TIMER_DURATION}
-              onTimeout={handleTimeout}
-              isRunning={!isAnswered}
+              onTimeout={() => setUserAnswer(0)}
+              isRunning={userAnswer === null}
               onReset={timerKey}
             />
           </div>
@@ -527,7 +530,7 @@ function App() {
 
         {/* 문제 또는 피드백 영역 - 레이아웃 변화 방지를 위한 고정 컨테이너 */}
         <div className="mb-8 min-h-[200px]">
-          {!isAnswered ? (
+          {!answerResult ? (
             // 답변 전 문제 표시
             <div>
               <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-8 border-2 border-emerald-200 shadow-inner min-h-[140px] flex items-center justify-center">
@@ -541,8 +544,8 @@ function App() {
                 {currentQuiz.options.map((option, index) => (
                   <button
                     key={index}
-                    onClick={() => handleAnswerClick(index)}
-                    disabled={isAnswered || loading}
+                    onClick={() => onAnswer(index)}
+                    disabled={userAnswer !== null || loading}
                     className={`${ANSWER_COLORS[index]} text-white font-bold text-lg shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer p-6 rounded-2xl relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed min-h-[120px]`}
                   >
                     <div className="relative z-10 flex items-center justify-center">
@@ -552,7 +555,7 @@ function App() {
                 ))}
               </div>
             </div>
-          ) : answerResult ? (
+          ) : (
             // 답변 후 피드백 표시
             <div className="animate-fade-in">
               <div className={`p-8 rounded-2xl border-3 shadow-lg min-h-[140px] ${answerResult.is_correct
@@ -601,7 +604,7 @@ function App() {
                 </button>
               </div>
             </div>
-          ) : null}
+          )}
         </div>
 
         {/* Error message */}
