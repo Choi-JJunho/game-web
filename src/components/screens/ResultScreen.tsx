@@ -30,6 +30,23 @@ export function ResultScreen({
   onBackToMenu,
   onRetry,
 }: ResultScreenProps) {
+  const handleBackToMenu = () => {
+    console.log('[ResultScreen] Back to menu button clicked', {
+      total_count: totalCount,
+      correct_count: correctCount,
+      accuracy,
+      rank_title: rankInfo.title,
+    });
+    onBackToMenu();
+  };
+
+  const handleRetry = () => {
+    console.log('[ResultScreen] Retry button clicked', {
+      previous_score: { total_count: totalCount, correct_count: correctCount, accuracy },
+    });
+    onRetry();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-500 via-green-500 to-emerald-600 flex items-center justify-center p-4">
       <Confetti show={showConfetti} />
@@ -116,7 +133,7 @@ export function ResultScreen({
         {/* Action Buttons */}
         <div className="space-y-3">
           <button
-            onClick={onBackToMenu}
+            onClick={handleBackToMenu}
             className={`w-full bg-gradient-to-r ${rankInfo.color} text-white font-bold py-4 px-6 rounded-2xl hover:shadow-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg`}
           >
             <span className="flex items-center justify-center gap-2">
@@ -125,7 +142,7 @@ export function ResultScreen({
             </span>
           </button>
           <button
-            onClick={onRetry}
+            onClick={handleRetry}
             disabled={loading}
             className="w-full bg-white border-2 border-gray-300 text-gray-700 font-bold py-4 px-6 rounded-2xl hover:border-emerald-400 hover:bg-emerald-50 transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >

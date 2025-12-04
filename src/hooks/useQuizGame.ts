@@ -117,6 +117,7 @@ export function useQuizGame(): UseQuizGameReturn {
   // 답변 선택 처리
   const onAnswer = useCallback((answerIndex: number) => {
     if (userAnswer !== null) return;
+    console.log('[useQuizGame] User answer selected:', { answerIndex });
     setUserAnswer(answerIndex);
   }, [userAnswer]);
 
@@ -143,22 +144,53 @@ export function useQuizGame(): UseQuizGameReturn {
         setQuizHistory(newHistory);
         setTimerKey((prev) => prev + 1);
 
+        const isGameComplete = newHistory.length >= QUIZ_COUNT;
+
         if (result.is_correct) {
+          console.log('[useQuizGame] Correct answer!', {
+            quiz_id: currentQuiz.id,
+            question_number: newHistory.length,
+            total_correct: newHistory.filter((h) => h.is_correct).length,
+            is_game_complete: isGameComplete,
+          });
           setShowConfetti(true);
           setTimeout(() => setShowConfetti(false), CONFETTI_DURATION);
 
           if (newHistory.length < QUIZ_COUNT) {
+            console.log('[useQuizGame] Auto-transitioning to next question after correct answer');
             const timer = setTimeout(() => {
               handleNextQuestion();
             }, CORRECT_ANSWER_DELAY);
             setAutoTransitionTimer(timer);
+          } else {
+            console.log('[useQuizGame] Game completed!', {
+              final_score: {
+                correct: newHistory.filter((h) => h.is_correct).length,
+                total: newHistory.length,
+              },
+            });
           }
         } else {
+          console.log('[useQuizGame] Wrong answer!', {
+            quiz_id: currentQuiz.id,
+            question_number: newHistory.length,
+            total_correct: newHistory.filter((h) => h.is_correct).length,
+            is_game_complete: isGameComplete,
+          });
+
           if (newHistory.length < QUIZ_COUNT) {
+            console.log('[useQuizGame] Auto-transitioning to next question after wrong answer');
             const timer = setTimeout(() => {
               handleNextQuestion();
             }, WRONG_ANSWER_DELAY);
             setAutoTransitionTimer(timer);
+          } else {
+            console.log('[useQuizGame] Game completed!', {
+              final_score: {
+                correct: newHistory.filter((h) => h.is_correct).length,
+                total: newHistory.length,
+              },
+            });
           }
         }
       } catch (err) {
@@ -180,11 +212,17 @@ export function useQuizGame(): UseQuizGameReturn {
 
   // 결과 화면 표시
   const showResults = useCallback(() => {
+    console.log('[useQuizGame] Showing results screen', {
+      total_questions: quizHistory.length,
+      correct_count: quizHistory.filter((h) => h.is_correct).length,
+    });
     setGameMode('result');
-  }, []);
+  }, [quizHistory]);
 
   // 메인 메뉴로 돌아가기
   const backToMenu = useCallback(() => {
+    console.log('[useQuizGame] Returning to menu');
+
     if (autoTransitionTimer) {
       clearTimeout(autoTransitionTimer);
       setAutoTransitionTimer(null);

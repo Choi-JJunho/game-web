@@ -7,6 +7,11 @@ interface MenuScreenProps {
 }
 
 export function MenuScreen({ loading, error, onStartGame }: MenuScreenProps) {
+  const handleStartGame = () => {
+    console.log('[MenuScreen] Game start button clicked');
+    onStartGame();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Animated background elements */}
@@ -35,7 +40,7 @@ export function MenuScreen({ loading, error, onStartGame }: MenuScreenProps) {
 
         <div className="space-y-4">
           <button
-            onClick={onStartGame}
+            onClick={handleStartGame}
             disabled={loading}
             className="w-full bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 text-white font-bold py-5 px-6 rounded-2xl hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 transition-all transform hover:scale-105 active:scale-95 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
           >

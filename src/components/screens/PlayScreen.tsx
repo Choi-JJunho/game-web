@@ -31,6 +31,40 @@ export function PlayScreen({
   onNextQuestion,
   onShowResults,
 }: PlayScreenProps) {
+  const handleAnswer = (index: number) => {
+    console.log('[PlayScreen] Answer selected:', {
+      quiz_id: currentQuiz.id,
+      answer_index: index,
+      selected_option: currentQuiz.options[index],
+      question_number: quizHistory.length + 1,
+    });
+    onAnswer(index);
+  };
+
+  const handleNextQuestion = () => {
+    console.log('[PlayScreen] Next question button clicked', {
+      current_question: quizHistory.length,
+      is_last_question: quizHistory.length >= QUIZ_COUNT,
+    });
+    onNextQuestion();
+  };
+
+  const handleShowResults = () => {
+    console.log('[PlayScreen] Show results button clicked', {
+      total_questions: quizHistory.length,
+      correct_answers: quizHistory.filter((h) => h.is_correct).length,
+    });
+    onShowResults();
+  };
+
+  const handleTimeout = () => {
+    console.log('[PlayScreen] Timer timeout - auto selecting first answer', {
+      quiz_id: currentQuiz.id,
+      question_number: quizHistory.length + 1,
+    });
+    onAnswer(0);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 flex items-center justify-center p-4">
       <Confetti show={showConfetti} />
@@ -56,7 +90,7 @@ export function PlayScreen({
           <div className="mb-4">
             <Timer
               duration={TIMER_DURATION}
-              onTimeout={() => onAnswer(0)}
+              onTimeout={handleTimeout}
               isRunning={userAnswer === null}
               onReset={timerKey}
             />
@@ -70,7 +104,7 @@ export function PlayScreen({
               currentQuiz={currentQuiz}
               userAnswer={userAnswer}
               loading={loading}
-              onAnswer={onAnswer}
+              onAnswer={handleAnswer}
             />
           ) : (
             <FeedbackView
@@ -78,8 +112,8 @@ export function PlayScreen({
               answerResult={answerResult}
               quizHistoryLength={quizHistory.length}
               loading={loading}
-              onNextQuestion={onNextQuestion}
-              onShowResults={onShowResults}
+              onNextQuestion={handleNextQuestion}
+              onShowResults={handleShowResults}
             />
           )}
         </div>
