@@ -102,7 +102,7 @@ export function useQuizGame(): UseQuizGameReturn {
       setAnswerResult(null);
       setTimerKey((prev) => prev + 1);
 
-      Analytics.impression({ action: 'game_started', quiz_count: QUIZ_COUNT });
+      Analytics.impression({ event_name: 'game_started', quiz_count: QUIZ_COUNT });
     } catch (err) {
       console.error('[App] Start game error:', err);
       const errorMessage =
@@ -157,7 +157,7 @@ export function useQuizGame(): UseQuizGameReturn {
             is_game_complete: isGameComplete,
           });
           Analytics.impression({
-            action: 'answer_correct',
+            event_name: 'answer_correct',
             quiz_id: currentQuiz.id,
             question_number: newHistory.length,
             total_correct: newHistory.filter((h) => h.is_correct).length,
@@ -180,7 +180,7 @@ export function useQuizGame(): UseQuizGameReturn {
               },
             });
             Analytics.impression({
-              action: 'game_complete',
+              event_name: 'game_complete',
               final_correct: newHistory.filter((h) => h.is_correct).length,
               final_total: newHistory.length,
               accuracy: Math.round((newHistory.filter((h) => h.is_correct).length / newHistory.length) * 100),
@@ -194,7 +194,7 @@ export function useQuizGame(): UseQuizGameReturn {
             is_game_complete: isGameComplete,
           });
           Analytics.impression({
-            action: 'answer_wrong',
+            event_name: 'answer_wrong',
             quiz_id: currentQuiz.id,
             question_number: newHistory.length,
             total_correct: newHistory.filter((h) => h.is_correct).length,
@@ -214,7 +214,7 @@ export function useQuizGame(): UseQuizGameReturn {
               },
             });
             Analytics.impression({
-              action: 'game_complete',
+              event_name: 'game_complete',
               final_correct: newHistory.filter((h) => h.is_correct).length,
               final_total: newHistory.length,
               accuracy: Math.round((newHistory.filter((h) => h.is_correct).length / newHistory.length) * 100),

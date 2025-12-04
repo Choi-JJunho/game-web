@@ -40,8 +40,7 @@ export function PlayScreen({
       question_number: quizHistory.length + 1,
     });
     Analytics.click({
-      action: 'answer_select',
-      screen: 'play',
+      button_name: 'answer_select',
       quiz_id: currentQuiz.id,
       answer_index: index,
       question_number: quizHistory.length + 1,
@@ -55,8 +54,7 @@ export function PlayScreen({
       is_last_question: quizHistory.length >= QUIZ_COUNT,
     });
     Analytics.click({
-      action: 'next_question',
-      screen: 'play',
+      button_name: 'next_question',
       current_question: quizHistory.length,
     });
     onNextQuestion();
@@ -68,8 +66,7 @@ export function PlayScreen({
       correct_answers: quizHistory.filter((h) => h.is_correct).length,
     });
     Analytics.click({
-      action: 'show_results',
-      screen: 'play',
+      button_name: 'show_results',
       total_questions: quizHistory.length,
       correct_answers: quizHistory.filter((h) => h.is_correct).length,
     });
@@ -82,8 +79,7 @@ export function PlayScreen({
       question_number: quizHistory.length + 1,
     });
     Analytics.click({
-      action: 'timer_timeout',
-      screen: 'play',
+      button_name: 'timer_timeout',
       quiz_id: currentQuiz.id,
       question_number: quizHistory.length + 1,
     });

@@ -39,8 +39,7 @@ export function ResultScreen({
       rank_title: rankInfo.title,
     });
     Analytics.click({
-      action: 'back_to_menu',
-      screen: 'result',
+      button_name: 'back_to_menu',
       total_count: totalCount,
       correct_count: correctCount,
       accuracy,
@@ -53,8 +52,7 @@ export function ResultScreen({
       previous_score: { total_count: totalCount, correct_count: correctCount, accuracy },
     });
     Analytics.click({
-      action: 'retry',
-      screen: 'result',
+      button_name: 'retry',
       previous_total: totalCount,
       previous_correct: correctCount,
       previous_accuracy: accuracy,

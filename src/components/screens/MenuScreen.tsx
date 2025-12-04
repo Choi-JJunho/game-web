@@ -10,7 +10,7 @@ interface MenuScreenProps {
 export function MenuScreen({ loading, error, onStartGame }: MenuScreenProps) {
   const handleStartGame = () => {
     console.log('[MenuScreen] Game start button clicked');
-    Analytics.click({ action: 'game_start', screen: 'menu' });
+    Analytics.click({ button_name: 'game_start' });
     onStartGame();
   };
 
