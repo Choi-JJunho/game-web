@@ -8,6 +8,7 @@ import {
   WRONG_ANSWER_DELAY,
   CONFETTI_DURATION,
 } from '../constants/game';
+import { Analytics } from '@apps-in-toss/web-framework';
 
 interface UseQuizGameReturn {
   // 상태
@@ -100,6 +101,8 @@ export function useQuizGame(): UseQuizGameReturn {
       setUserAnswer(null);
       setAnswerResult(null);
       setTimerKey((prev) => prev + 1);
+
+      Analytics.impression({ action: 'game_started', quiz_count: QUIZ_COUNT });
     } catch (err) {
       console.error('[App] Start game error:', err);
       const errorMessage =
@@ -153,6 +156,13 @@ export function useQuizGame(): UseQuizGameReturn {
             total_correct: newHistory.filter((h) => h.is_correct).length,
             is_game_complete: isGameComplete,
           });
+          Analytics.impression({
+            action: 'answer_correct',
+            quiz_id: currentQuiz.id,
+            question_number: newHistory.length,
+            total_correct: newHistory.filter((h) => h.is_correct).length,
+          });
+
           setShowConfetti(true);
           setTimeout(() => setShowConfetti(false), CONFETTI_DURATION);
 
@@ -169,6 +179,12 @@ export function useQuizGame(): UseQuizGameReturn {
                 total: newHistory.length,
               },
             });
+            Analytics.impression({
+              action: 'game_complete',
+              final_correct: newHistory.filter((h) => h.is_correct).length,
+              final_total: newHistory.length,
+              accuracy: Math.round((newHistory.filter((h) => h.is_correct).length / newHistory.length) * 100),
+            });
           }
         } else {
           console.log('[useQuizGame] Wrong answer!', {
@@ -176,6 +192,12 @@ export function useQuizGame(): UseQuizGameReturn {
             question_number: newHistory.length,
             total_correct: newHistory.filter((h) => h.is_correct).length,
             is_game_complete: isGameComplete,
+          });
+          Analytics.impression({
+            action: 'answer_wrong',
+            quiz_id: currentQuiz.id,
+            question_number: newHistory.length,
+            total_correct: newHistory.filter((h) => h.is_correct).length,
           });
 
           if (newHistory.length < QUIZ_COUNT) {
@@ -190,6 +212,12 @@ export function useQuizGame(): UseQuizGameReturn {
                 correct: newHistory.filter((h) => h.is_correct).length,
                 total: newHistory.length,
               },
+            });
+            Analytics.impression({
+              action: 'game_complete',
+              final_correct: newHistory.filter((h) => h.is_correct).length,
+              final_total: newHistory.length,
+              accuracy: Math.round((newHistory.filter((h) => h.is_correct).length / newHistory.length) * 100),
             });
           }
         }

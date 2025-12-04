@@ -6,6 +6,7 @@ import { RefreshIcon } from '../icons/RefreshIcon';
 import { ChartIcon } from '../icons/ChartIcon';
 import { CheckIcon } from '../icons/CheckIcon';
 import { XIcon } from '../icons/XIcon';
+import { Analytics } from '@apps-in-toss/web-framework';
 
 interface ResultScreenProps {
   quizHistory: AnswerResponse[];
@@ -37,12 +38,26 @@ export function ResultScreen({
       accuracy,
       rank_title: rankInfo.title,
     });
+    Analytics.click({
+      action: 'back_to_menu',
+      screen: 'result',
+      total_count: totalCount,
+      correct_count: correctCount,
+      accuracy,
+    });
     onBackToMenu();
   };
 
   const handleRetry = () => {
     console.log('[ResultScreen] Retry button clicked', {
       previous_score: { total_count: totalCount, correct_count: correctCount, accuracy },
+    });
+    Analytics.click({
+      action: 'retry',
+      screen: 'result',
+      previous_total: totalCount,
+      previous_correct: correctCount,
+      previous_accuracy: accuracy,
     });
     onRetry();
   };

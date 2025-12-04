@@ -1,4 +1,5 @@
 import { DiceIcon } from '../icons/DiceIcon';
+import { Analytics } from '@apps-in-toss/web-framework';
 
 interface MenuScreenProps {
   loading: boolean;
@@ -9,6 +10,7 @@ interface MenuScreenProps {
 export function MenuScreen({ loading, error, onStartGame }: MenuScreenProps) {
   const handleStartGame = () => {
     console.log('[MenuScreen] Game start button clicked');
+    Analytics.click({ action: 'game_start', screen: 'menu' });
     onStartGame();
   };
 

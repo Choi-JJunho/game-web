@@ -3,6 +3,7 @@ import { Confetti } from '../Confetti';
 import { Timer } from '../Timer';
 import { getCategoryColor } from '../../utils/quiz';
 import { QUIZ_COUNT, TIMER_DURATION, ANSWER_COLORS } from '../../constants/game';
+import { Analytics } from '@apps-in-toss/web-framework';
 
 interface PlayScreenProps {
   currentQuiz: QuizResponse;
@@ -38,6 +39,13 @@ export function PlayScreen({
       selected_option: currentQuiz.options[index],
       question_number: quizHistory.length + 1,
     });
+    Analytics.click({
+      action: 'answer_select',
+      screen: 'play',
+      quiz_id: currentQuiz.id,
+      answer_index: index,
+      question_number: quizHistory.length + 1,
+    });
     onAnswer(index);
   };
 
@@ -45,6 +53,11 @@ export function PlayScreen({
     console.log('[PlayScreen] Next question button clicked', {
       current_question: quizHistory.length,
       is_last_question: quizHistory.length >= QUIZ_COUNT,
+    });
+    Analytics.click({
+      action: 'next_question',
+      screen: 'play',
+      current_question: quizHistory.length,
     });
     onNextQuestion();
   };
@@ -54,11 +67,23 @@ export function PlayScreen({
       total_questions: quizHistory.length,
       correct_answers: quizHistory.filter((h) => h.is_correct).length,
     });
+    Analytics.click({
+      action: 'show_results',
+      screen: 'play',
+      total_questions: quizHistory.length,
+      correct_answers: quizHistory.filter((h) => h.is_correct).length,
+    });
     onShowResults();
   };
 
   const handleTimeout = () => {
     console.log('[PlayScreen] Timer timeout - auto selecting first answer', {
+      quiz_id: currentQuiz.id,
+      question_number: quizHistory.length + 1,
+    });
+    Analytics.click({
+      action: 'timer_timeout',
+      screen: 'play',
       quiz_id: currentQuiz.id,
       question_number: quizHistory.length + 1,
     });
